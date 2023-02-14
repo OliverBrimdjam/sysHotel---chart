@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
-import { format, isAfter, subMonths, toDate } from 'date-fns';
+import { isAfter, subMonths } from 'date-fns';
 import { Observable } from 'rxjs';
 
 type TRoomStatusLog = {
@@ -9,15 +9,6 @@ type TRoomStatusLog = {
   roomId?: number;
   roomStatusId?: number;
   lastChange?: string;
-}
-
-type TRoom = {
-  id: number;
-  name: string;
-  roomStatusId: number;
-  roomTypeId: number;
-  createdAt: Date;
-  updatedAt?: Date;
 }
 
 @Component({
@@ -29,7 +20,7 @@ export class ChartApiComponent {
   title = 'Room Status Log';
 
   srcHistory: (TRoomStatusLog | null)[] = [];
-  historyLog: TRoomStatusLog[] = [];
+  historyLog: TRoomStatusLog[] = historyLogMock;
 
   availableRooms: TRoomStatusLog[] = [];
   occupiedRooms: TRoomStatusLog[] = [];
@@ -57,10 +48,6 @@ export class ChartApiComponent {
   }
 
   ngOnInit(): void {
-    this.syncChart().subscribe((data) => {
-      this.historyLog = data;
-      // this.separeteByStatus();
-    });
   }
 
   syncChart(): Observable<TRoomStatusLog[]> {
@@ -75,6 +62,7 @@ export class ChartApiComponent {
 
     this.syncChart().subscribe((data) => {
       this.historyLog = data;
+      // ------------------------------------
       this.srcHistory = this.historyLog.map((item) => {
         if (isAfter(new Date(item.lastChange!),pastDate)) {
           return item;
@@ -97,7 +85,7 @@ export class ChartApiComponent {
           label: 'Room Status'
         }]
       };
-    });
+    });//here
   }
 
   getLast3Months() {
@@ -154,8 +142,7 @@ export class ChartApiComponent {
   }
 }
 
-// const historyLog = [
-const o0 = [
+const historyLogMock = [
 	{
 		"id": 1,
 		"lastChange": "2022-06-12T17:43:58.618Z",
