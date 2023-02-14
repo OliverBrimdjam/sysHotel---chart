@@ -1,12 +1,23 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { format, isAfter, subMonths, toDate } from 'date-fns';
+import { Observable } from 'rxjs';
 
 type TRoomStatusLog = {
   id?: number;
   roomId?: number;
   roomStatusId?: number;
   lastChange?: string;
+}
+
+type TRoom = {
+  id: number;
+  name: string;
+  roomStatusId: number;
+  roomTypeId: number;
+  createdAt: Date;
+  updatedAt?: Date;
 }
 
 @Component({
@@ -18,11 +29,13 @@ export class ChartApiComponent {
   title = 'Room Status Log';
 
   srcHistory: (TRoomStatusLog | null)[] = [];
-  availableRooms: any = [];
-  occupiedRooms: any = [];
-  reservedRooms: any = [];
-  outOfOrderRooms: any = [];
-  maintenanceRooms: any = [];
+  historyLog: TRoomStatusLog[] = [];
+
+  availableRooms: TRoomStatusLog[] = [];
+  occupiedRooms: TRoomStatusLog[] = [];
+  reservedRooms: TRoomStatusLog[] = [];
+  outOfOrderRooms: TRoomStatusLog[] = [];
+  maintenanceRooms: TRoomStatusLog[] = [];
 
 
   public barChartLegend = true;
@@ -40,62 +53,51 @@ export class ChartApiComponent {
     responsive: false,
   };
 
-  constructor() {
+  constructor(private http: HttpClient) {
   }
 
   ngOnInit(): void {
-    console.log('chegou no onInit')
-    // this.getLast3Months();
-    // this.getLast6Months();
+    this.syncChart().subscribe((data) => {
+      this.historyLog = data;
+      // this.separeteByStatus();
+    });
+  }
 
-    // this.separeteByStatus();
-
-
+  syncChart(): Observable<TRoomStatusLog[]> {
+    return this.http.get<TRoomStatusLog[]>(`http://localhost:3000/roomHistory`);
   }
 
   ngAfterViewInit(): void {
     this.getLast12Months();
-
-  //   this.barChartData = {
-  //   labels: [ 'Available', 'Occupied', 'Reserved', 'Out of Order', 'Maintenance' ],
-  //   datasets: [{
-  //     data: [
-  //       this.availableRooms.length,
-  //       this.occupiedRooms.length,
-  //       this.reservedRooms.length,
-  //       this.outOfOrderRooms.length,
-  //       this.maintenanceRooms.length
-  //     ],
-  //     label: 'Room Status'
-  //   }]
-  // };
   }
 
   filterLogPeriod(pastDate: Date) {
-    // const curDate = new Date();
-    this.srcHistory = historyLog.map((item) => {
-      if (isAfter(new Date(item.lastChange),pastDate)) {
-        return item;
-      } else {
-        return null
-      }
+
+    this.syncChart().subscribe((data) => {
+      this.historyLog = data;
+      this.srcHistory = this.historyLog.map((item) => {
+        if (isAfter(new Date(item.lastChange!),pastDate)) {
+          return item;
+        } else {
+          return null
+        }
+      });
+      this.separeteByStatus();
+
+      this.barChartData = {
+        labels: [ 'Available', 'Occupied', 'Reserved', 'Out of Order', 'Maintenance' ],
+        datasets: [{
+          data: [
+            this.availableRooms.length,
+            this.occupiedRooms.length,
+            this.reservedRooms.length,
+            this.outOfOrderRooms.length,
+            this.maintenanceRooms.length
+          ],
+          label: 'Room Status'
+        }]
+      };
     });
-    this.separeteByStatus();
-
-    this.barChartData = {
-    labels: [ 'Available', 'Occupied', 'Reserved', 'Out of Order', 'Maintenance' ],
-    datasets: [{
-      data: [
-        this.availableRooms.length,
-        this.occupiedRooms.length,
-        this.reservedRooms.length,
-        this.outOfOrderRooms.length,
-        this.maintenanceRooms.length
-      ],
-      label: 'Room Status'
-    }]
-  };
-
   }
 
   getLast3Months() {
@@ -152,7 +154,8 @@ export class ChartApiComponent {
   }
 }
 
-const historyLog = [
+// const historyLog = [
+const o0 = [
 	{
 		"id": 1,
 		"lastChange": "2022-06-12T17:43:58.618Z",

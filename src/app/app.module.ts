@@ -8,6 +8,7 @@ import { NgChartsModule } from 'ng2-charts';
 import { ChartComponent } from './components/chart/chart.component';
 import { ChartApiComponent } from './components/chart-api/chart-api.component';
 import { DateFnsModule } from 'ngx-date-fns';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { DateFnsModule } from 'ngx-date-fns';
     AppRoutingModule,
     BrowserAnimationsModule,
     NgChartsModule,
-    DateFnsModule.forRoot()
+    DateFnsModule.forRoot(),
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent]
