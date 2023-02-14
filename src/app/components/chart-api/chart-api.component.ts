@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { format, isAfter, subMonths, toDate } from 'date-fns';
 
@@ -24,6 +24,7 @@ export class ChartApiComponent {
   outOfOrderRooms: any = [];
   maintenanceRooms: any = [];
 
+
   public barChartLegend = true;
   public barChartPlugins = [];
 
@@ -46,7 +47,39 @@ export class ChartApiComponent {
     console.log('chegou no onInit')
     // this.getLast3Months();
     // this.getLast6Months();
+
+    // this.separeteByStatus();
+
+
+  }
+
+  ngAfterViewInit(): void {
     this.getLast12Months();
+
+  //   this.barChartData = {
+  //   labels: [ 'Available', 'Occupied', 'Reserved', 'Out of Order', 'Maintenance' ],
+  //   datasets: [{
+  //     data: [
+  //       this.availableRooms.length,
+  //       this.occupiedRooms.length,
+  //       this.reservedRooms.length,
+  //       this.outOfOrderRooms.length,
+  //       this.maintenanceRooms.length
+  //     ],
+  //     label: 'Room Status'
+  //   }]
+  // };
+  }
+
+  filterLogPeriod(pastDate: Date) {
+    // const curDate = new Date();
+    this.srcHistory = historyLog.map((item) => {
+      if (isAfter(new Date(item.lastChange),pastDate)) {
+        return item;
+      } else {
+        return null
+      }
+    });
     this.separeteByStatus();
 
     this.barChartData = {
@@ -62,17 +95,7 @@ export class ChartApiComponent {
       label: 'Room Status'
     }]
   };
-  }
 
-  filterLogPeriod(pastDate: Date) {
-    const curDate = new Date();
-    this.srcHistory = historyLog.map((item) => {
-      if (isAfter(new Date(item.lastChange),pastDate)) {
-        return item;
-      } else {
-        return null
-      }
-    });
   }
 
   getLast3Months() {
@@ -97,6 +120,12 @@ export class ChartApiComponent {
   }
 
   separeteByStatus(): void {
+    this.availableRooms = [];
+    this.occupiedRooms = [];
+    this.reservedRooms = [];
+    this.outOfOrderRooms = [];
+    this.maintenanceRooms = [];
+
     this.srcHistory.forEach((item: any) => {
       if (item === null) return;
       console.log(item.roomStatusId)
