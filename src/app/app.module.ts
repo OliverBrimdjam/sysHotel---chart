@@ -7,6 +7,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgChartsModule } from 'ng2-charts';
 import { ChartComponent } from './components/chart/chart.component';
 import { ChartApiComponent } from './components/chart-api/chart-api.component';
+import { DateFnsModule } from 'ngx-date-fns';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { ChartApiComponent } from './components/chart-api/chart-api.component';
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    NgChartsModule
+    NgChartsModule,
+    DateFnsModule.forRoot()
   ],
   providers: [],
   bootstrap: [AppComponent]

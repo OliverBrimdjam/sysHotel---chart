@@ -1,7 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
+import { format, isAfter, subMonths, toDate } from 'date-fns';
 
-
+type TRoomStatusLog = {
+  id?: number;
+  roomId?: number;
+  roomStatusId?: number;
+  lastChange?: string;
+}
 
 @Component({
   selector: 'app-chart-api',
@@ -9,17 +15,24 @@ import { ChartConfiguration } from 'chart.js';
   styleUrls: ['./chart-api.component.scss']
 })
 export class ChartApiComponent {
-  title = 'ng2-charts-demo';
+  title = 'Room Status Log';
+
+  srcHistory: (TRoomStatusLog | null)[] = [];
+  availableRooms: any = [];
+  occupiedRooms: any = [];
+  reservedRooms: any = [];
+  outOfOrderRooms: any = [];
+  maintenanceRooms: any = [];
 
   public barChartLegend = true;
   public barChartPlugins = [];
 
   public barChartData: ChartConfiguration<'bar'>['data'] = {
-    labels: [ '2006', '2007', '2008', '2009', '2010', '2011', '2012' ],
-    datasets: [
-      { data: [ 65, 59, 80, 81, 56, 55, 40 ], label: 'Series A' },
-      { data: [ 28, 48, 40, 19, 86, 27, 90 ], label: 'Series B' }
-    ]
+    labels: [ 'Available', 'Occupied', 'Reserved', 'Out of Order', 'Maintenance' ],
+    datasets: [{
+      data: [0, 0, 0, 0, 0],
+      label: 'Room Status'
+    }]
   };
 
   public barChartOptions: ChartConfiguration<'bar'>['options'] = {
@@ -30,28 +43,84 @@ export class ChartApiComponent {
   }
 
   ngOnInit(): void {
+    console.log('chegou no onInit')
+    // this.getLast3Months();
+    // this.getLast6Months();
+    this.getLast12Months();
+    this.separeteByStatus();
 
+    this.barChartData = {
+    labels: [ 'Available', 'Occupied', 'Reserved', 'Out of Order', 'Maintenance' ],
+    datasets: [{
+      data: [
+        this.availableRooms.length,
+        this.occupiedRooms.length,
+        this.reservedRooms.length,
+        this.outOfOrderRooms.length,
+        this.maintenanceRooms.length
+      ],
+      label: 'Room Status'
+    }]
+  };
   }
 
-  // getLast3Months(): number[] {
-  //   const months = [];
-  //   const date = new Date();
-  //   const month = date.getMonth();
-  //   for (let i = 0; i < 3; i++) {
-  //     months.push(month - i);
-  //   }
-  //   return months;
-  // }
-
-  getLast3Months(comeDate: Date) {
-    const months = [];
+  filterLogPeriod(pastDate: Date) {
     const curDate = new Date();
-    const month = comeDate.getMonth();
-    let year = comeDate.getFullYear();
+    this.srcHistory = historyLog.map((item) => {
+      if (isAfter(new Date(item.lastChange),pastDate)) {
+        return item;
+      } else {
+        return null
+      }
+    });
   }
 
+  getLast3Months() {
+    const curDate = new Date();
+    const pastDate = subMonths(curDate, 3);
 
+    this.filterLogPeriod(pastDate);
+  }
 
+  getLast6Months() {
+    const curDate = new Date();
+    const pastDate = subMonths(curDate, 6);
+
+    this.filterLogPeriod(pastDate);
+  }
+
+  getLast12Months() {
+    const curDate = new Date();
+    const pastDate = subMonths(curDate, 12);
+
+    this.filterLogPeriod(pastDate);
+  }
+
+  separeteByStatus(): void {
+    this.srcHistory.forEach((item: any) => {
+      if (item === null) return;
+      console.log(item.roomStatusId)
+      switch (item.roomStatusId) {
+        case 1:
+          this.availableRooms.push(item);
+          break;
+        case 2:
+          this.occupiedRooms.push(item);
+          break;
+        case 3:
+          this.reservedRooms.push(item);
+          break;
+        case 4:
+          this.outOfOrderRooms.push(item);
+          break;
+        case 5:
+          this.maintenanceRooms.push(item);
+          break;
+        default:
+          break;
+      }
+    })
+  }
 }
 
 const historyLog = [
@@ -76,7 +145,7 @@ const historyLog = [
   {
     "id": 4,
     "lastChange": "2022-08-13T09:12:32.121Z",
-    "roomId": 8,
+    "roomId": 6,
     "roomStatusId": 1
   },
   {
@@ -88,49 +157,49 @@ const historyLog = [
   {
     "id": 6,
     "lastChange": "2022-09-13T11:34:56.432Z",
-    "roomId": 9,
+    "roomId": 2,
     "roomStatusId": 3
     },
   {
     "id": 7,
     "lastChange": "2022-10-13T12:45:67.543Z",
-    "roomId": 10,
+    "roomId": 1,
     "roomStatusId": 4
   },
   {
     "id": 8,
     "lastChange": "2022-10-13T13:56:78.654Z",
-    "roomId": 11,
+    "roomId": 4,
     "roomStatusId": 2
   },
   {
     "id": 9,
     "lastChange": "2022-11-13T14:67:89.765Z",
-    "roomId": 12,
+    "roomId": 5,
     "roomStatusId": 4
   },
   {
     "id": 10,
     "lastChange": "2022-11-13T15:78:90.876Z",
-    "roomId": 13,
+    "roomId": 3,
     "roomStatusId": 4
   },
   {
     "id": 11,
     "lastChange": "2023-01-13T16:89:01.987Z",
-    "roomId": 14,
+    "roomId": 4,
     "roomStatusId": 2
   },
   {
     "id": 12,
     "lastChange": "2023-02-13T17:12:23.098Z",
-    "roomId": 15,
+    "roomId": 6,
     "roomStatusId": 2
   },
   {
     "id": 13,
     "lastChange": "2023-02-13T18:23:34.209Z",
-    "roomId": 16,
+    "roomId": 5,
     "roomStatusId": 1
   }
 ]
